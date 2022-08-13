@@ -1,8 +1,6 @@
 # WebSSH2
 
-<ignorestart>
-
-[![Build Status](https://travis-ci.com/billchurch/webssh2.svg?branch=main)](https://travis-ci.com/billchurch/webssh2) [![GitHub version](https://img.shields.io/github/v/release/billchurch/webssh2)](https://github.com/billchurch/webssh2/releases/latest)
+[![Build Status](https://travis-ci.com/billchurch/webssh2.svg?branch=main)](https://travis-ci.com/billchurch/webssh2) [![GitHub version](https://img.shields.io/github/v/release/billchurch/webssh2)](https://github.com/billchurch/webssh2/releases/latest) [![docker build images](https://github.com/billchurch/webssh2/actions/workflows/docker-multiplatform.yml/badge.svg)](https://github.com/billchurch/webssh2/actions/workflows/docker-multiplatform.yml)
 
 [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/billchurch)
 
@@ -10,7 +8,7 @@ Web SSH Client using ssh2, socket.io, xterm.js, and express
 
 A bare bones example of an HTML5 web-based terminal emulator and SSH client. We use SSH2 as a client on a host to proxy a Websocket / Socket.io connection to a SSH2 server.
 
-<img width="600" height="340" alt="WebSSH2 v0.2.0 demo" src="https://github.com/billchurch/WebSSH2/raw/main/screenshots/demo-800.gif">
+<img width="600" height="340" alt="WebSSH2 v0.2.0 demo" src="https://user-images.githubusercontent.com/1668075/182425293-acc8741e-cc92-4105-afdc-9538e1685d4b.gif">
 
 # Requirements
 Node v14.x or above. If using <v14.x you should be able to run by replacing the "read-config" package to @1 like this (after a clone):
@@ -41,11 +39,34 @@ http://localhost:2222/ssh/host/127.0.0.1
 
 You will be prompted for credentials to use on the SSH server via HTTP Basic authentcaiton. This is to permit usage with some SSO systems that can replay credentials over HTTP basic.
 
+Alternatively in main for testing, you can send credentials via POST with the variables "username" and "userpassword".
+
 # Customizing client files
 
 See [BUILDING.md](BUILDING.md) for more details.
 
 # Docker Instructions
+Some configuration options are available as [Environment Variables](#environment-variables). If there is a configuration option you require which does not have an environment variable please [open an issue requesting](../../issues/new/choose).
+
+[webssh2 images are available in docker hub](https://hub.docker.com/repository/docker/billchurch/webssh2).
+
+the `latest` tag will pull the most recent stable release, otherwise you can pull individual tags/releases/versions of this repo by using a particular version in the tag.
+
+For instance:
+
+```docker pull billchurch/webssh2:0.4.6```
+
+or 
+
+```docker pull billchurch/webssh2:0.4.7-alpha.2```
+
+or
+
+```docker pull billchurch/webssh2```
+
+for the most recent
+
+If you want to play around localy:
 
 Copy app/config.json.template to app/config.json and modify the latter:
 
@@ -79,19 +100,30 @@ Alternatively if you don't want to build either and mount the config at runtime 
 docker run --name webssh2 -d -p 2222:2222 -v `pwd`/app/config.json:/usr/src/config.json billchurch/webssh2
 ```
   
-<ignoreend>
-
 # Options
 
-## GET request vars
+## Environment Variables 
+Environment variables introduced in 0.4.7 will override anything specified in `config.json`. This is useful for settings that may be per-node, or in a container environment. These are optional and will default to whatever their peer config.json settings are
+
+* **LISTEN** - _string_ - IP address node should listen on for client connections, defaults to `127.0.0.1`. Peer is **listen.ip**
+* **PORT** - _integer_ - Port node should listen on for client connections, defaults to `2222`. Peer is **listen.port**
+* **SOCKETIO_ORIGINS** - _array_ - COORS origins to allow connections from to socket.io server, defaults to `localhost:2222`. Changed in 0.3.1, to enable previous, less secure, default behavior of everything use `*:*` (not recommended). Check [#240](../../issues/240). Peer is **socketio.origins**
+* **SOCKETIO_PATH** _string_ - Path to socket.io client files. Default: `/ssh/socket.io`. Peer is **socketio.path**
+* **SOCKETIO_SERVECLIENT** _boolean_ - serve the socket.io client. This is built into the custom javascript, so you shouldn't need this. Kept as an option just in case. Default: `false`. Peer is **socketio.serveClient**
+
+## POST request vars (in main branch for testing)
+
+* **username** - _string_ - username to log into ssh with
+
+* **userpassword** _string_ password to log into ssh with
 
 * **port=** - _integer_ - port of SSH server (defaults to 22)
 
 * **header=** - _string_ - optional header to display on page
 
-* **sshterm=** - _string_ - optional specify terminal emulation to use, defaults to `ssh.term` in `config.json` or `vt100` if that is null
-
 * **headerBackground=** - _string_ - optional background color of header to display on page
+
+* **sshterm=** - _string_ - optional specify terminal emulation to use, defaults to `ssh.term` in `config.json` or `vt100` if that is null
 
 * **readyTimeout=** - _integer_ - How long (in milliseconds) to wait for the SSH handshake to complete. **Default:** 20000. **Enforced Values:** Min: 1, Max: 300000
 
@@ -102,6 +134,42 @@ docker run --name webssh2 -d -p 2222:2222 -v `pwd`/app/config.json:/usr/src/conf
 * **tabStopWidth** - _integer_ - Tab stops at _n_ characters **Default:** 8. **Enforced Values:** Min: 1, Max: 100
 
 * **bellStyle** - _string_ - Style of terminal bell: ("sound"|"none"). **Default:** "sound". **Enforced Values:** "sound", "none"
+
+* **fontSize** - _number_ - Size of terminal font. **Default:** 12
+
+* **fontFamily** - _string_ - Font family
+
+* **letterSpacing** - _number_ - Letter spacing
+
+* **lineHeight** - _number_ - Line height
+
+## GET request vars
+
+* **port=** - _integer_ - port of SSH server (defaults to 22)
+
+* **header=** - _string_ - optional header to display on page
+
+* **headerBackground=** - _string_ - optional background color of header to display on page
+
+* **sshterm=** - _string_ - optional specify terminal emulation to use, defaults to `ssh.term` in `config.json` or `vt100` if that is null
+
+* **readyTimeout=** - _integer_ - How long (in milliseconds) to wait for the SSH handshake to complete. **Default:** 20000. **Enforced Values:** Min: 1, Max: 300000
+
+* **cursorBlink** - _boolean_ - Cursor blinks (true), does not (false) **Default:** true.
+
+* **scrollback** - _integer_ - Lines in the scrollback buffer. **Default:** 10000. **Enforced Values:** Min: 1, Max: 200000
+
+* **tabStopWidth** - _integer_ - Tab stops at _n_ characters **Default:** 8. **Enforced Values:** Min: 1, Max: 100
+
+* **bellStyle** - _string_ - Style of terminal bell: ("sound"|"none"). **Default:** "sound". **Enforced Values:** "sound", "none"
+
+* **fontSize** - _number_ - Size of terminal font. **Default:** "12"
+
+* **fontFamily** - _string_ - Font family
+
+* **letterSpacing** - _number_ - Letter spacing
+
+* **lineHeight** - _integer_ - Line height
 
 ## Headers
 
@@ -116,7 +184,11 @@ docker run --name webssh2 -d -p 2222:2222 -v `pwd`/app/config.json:/usr/src/conf
 
 * **listen.port** - _integer_ - Port node should listen on for client connections, defaults to `2222`
 
-* **http.origins** - _array_ - COORS origins to allow connections from to socket.io server, defaults to `localhost:2222`. Changed in 0.3.1, to enable previous, less secure, default behavior of everything use `*:*` (not recommended). Check [#240](../../issues/240)
+* **socketio.serveClient** - _boolean_ - serve the socket.io client. This is built into the custom javascript, so you shouldn't need this. Kept as an option just in case. Default: `false`
+
+* **socketio.path** - _string_ - Path to socket.io client files. Default: `/ssh/socket.io`
+
+* **socketio.origins** - _array_ - COORS origins to allow connections from to socket.io server, defaults to `localhost:2222`. Changed in 0.3.1, to enable previous, less secure, default behavior of everything use `*:*` (not recommended). Check [#240](../../issues/240)
 
 * **user.name** - _string_ - Specify user name to authenticate with. In normal cases this should be left to the default `null` setting.
 
@@ -145,6 +217,14 @@ docker run --name webssh2 -d -p 2222:2222 -v `pwd`/app/config.json:/usr/src/conf
 * **terminal.tabStopWidth** - _integer_ - Tab stops at _n_ characters **Default:** 8.
 
 * **terminal.bellStyle** - _string_ - Style of terminal bell: (sound|none). **Default:** "sound".
+
+* **terminal.fontSize** - _number_ - Size of terminal font. **Default:** 14.
+
+* **terminal.fontFamily** - _string_ - Font family
+
+* **terminal.letterSpacing** - _number_ - Letter spacing
+
+* **terminal.lineHeight** - _number_ - Line height
 
 * **header.text** - _string_ - Specify header text, defaults to `My Header` but may also be set to `null`. When set to `null` no header bar will be displayed on the client.
 
